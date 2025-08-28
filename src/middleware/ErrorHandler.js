@@ -1,11 +1,12 @@
 import { UnauthorizedAccess } from '../exceptions/UnauthorizedAccess.js';
 import { UserNotFound } from '../exceptions/UserNotFound.js';
+import { ResourceNotFound } from '../exceptions/ResourceNotFound.js';
 
 export function errorHandler(err, req, res, next) {
 
   if (err instanceof UnauthorizedAccess) {
     return res.status(403).json({ message: err.message });
-  } else if (err instanceof UserNotFound) {
+  } else if (err instanceof UserNotFound || ResourceNotFound ) {
     return res.status(404).json({ message: err.message })
   }
 

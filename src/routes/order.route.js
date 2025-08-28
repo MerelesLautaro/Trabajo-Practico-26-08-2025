@@ -1,6 +1,7 @@
 import { Router } from "express";
 import orderSchema from "../models/Order.js";
-import { saveOrder, getOrders } from "../services/OrderService.js";
+import updateStateRequest from "../dtos/UpdateStateRequest.js";
+import { saveOrder, getOrders, updateOrderState } from "../services/OrderService.js";
 import { authorizedRole } from "../middleware/AuthorizeRoles.js"
 
 const orderRouter = Router();
@@ -31,6 +32,28 @@ orderRouter.get("", async (req, res, next) => {
 
     const orders = await getOrders(userId);
     res.status(200).json(orders);
+  } catch (err) {
+    next(err);
+  }
+});
+
+orderRouter.patch("/:id/state", async (req, res, next) => {
+  try {
+    const userId = req.query.userId;
+    const orderId = req.params.id;
+
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId in query params" });
+    }
+
+    const { error, value } = updateStateRequest.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+
+    const updatedOrder = await updateOrderState(userId, orderId, value.status);
+
+    res.status(200).json({ message: "Order status updated", order: updatedOrder });
   } catch (err) {
     next(err);
   }
